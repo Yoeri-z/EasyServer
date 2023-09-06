@@ -1,7 +1,10 @@
 name: easy_server_cli
-description: The cli for the easy server tool
-version: 1.0.0
-# repository: https://github.com/my_org/my_repo
+description: The cli for the easy server tool.
+version: 1.0.4
+repository: https://github.com/Yoeri-z/EasyServer
+
+executables:
+  easyserver: easy_server_cli
 
 environment:
   sdk: ^3.0.3

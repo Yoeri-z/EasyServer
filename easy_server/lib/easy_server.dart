@@ -24,7 +24,6 @@ class EasyServer {
   ///
   ///You can make endpoints however deep you want, note that an endpoints can only have one function
   ///this might seem complicated but it creates an easier readable structure to your endpoints and allows you to set up the functions in whatever form you want
-  final Object endpoints;
 
   bool _initialized = false;
 
@@ -32,11 +31,11 @@ class EasyServer {
   late final StreamSubscription<HttpRequest> _requestListener;
 
   ///all the paths that are bounded to a function, allows to key a path and execute a function, usually this variable is only used internally
-  static final Map<String, Map<String, dynamic> Function(Map<String, dynamic>)>
-      boundedPaths = {};
+  final Map<String, Map<String, dynamic> Function(Map<String, dynamic>)>
+      connections;
 
   ///Create an EasyServer, manages httprequests and sends them to the correct endpoints, call [initialize] to start the server
-  EasyServer(String adress, int port, this.endpoints)
+  EasyServer(String adress, int port, this.connections)
       : _adress = adress,
         _port = port;
 
@@ -62,10 +61,10 @@ class EasyServer {
   }
 
   void _handleRequest(HttpRequest request) async {
-    if (boundedPaths[request.uri.path] != null) {
+    if (connections[request.uri.path] != null) {
       final json = jsonDecode(await utf8.decodeStream(request));
       final result =
-          boundedPaths[request.uri.path]!(json as Map<String, dynamic>);
+          connections[request.uri.path]!(json as Map<String, dynamic>);
       final body = jsonEncode(result);
       final response = request.response
         ..headers.contentType = ContentType.json

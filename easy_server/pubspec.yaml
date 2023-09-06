@@ -1,5 +1,6 @@
 name: easy_server
-description: A sample command-line application.
+description: The server for your easyserver application
+repository: https://github.com/Yoeri-z/EasyServer
 version: 1.0.0
 # repository: https://github.com/my_org/my_repo
 

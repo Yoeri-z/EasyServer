@@ -11,8 +11,8 @@ instead use
 ## requirements
 You will need to have a dart sdk installation of version 3.0.0 or higher
 
-## #how it works
-To create a new easy_server_cli first run:
+## how it works
+To create a new easyserver first run:
 
 ```dart pub global activate easyserver_cli```
 

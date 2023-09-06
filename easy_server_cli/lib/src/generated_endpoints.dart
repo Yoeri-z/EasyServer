@@ -78,7 +78,7 @@ class _FinalGeneratedEndPoint implements GeneratedEndpoint {
     buffer.write(' function){\n');
     buffer.write('\t\t_endPoint = function;\n');
     buffer.write(
-        '\t\tEndpoints.boundedPaths[path] = (Map<String, dynamic> json) => _middle(json);\n');
+        '\t\tEndpoints.connections[path] = (Map<String, dynamic> json) => _middle(json);\n');
     buffer.write('\t} \n } \n');
   }
 
@@ -103,7 +103,7 @@ class _SubGeneratedEndpoint implements GeneratedEndpoint {
   @override
   void generate(StringBuffer buffer) {
     buffer.write((name == 'Endpoints')
-        ? 'class $name{ \n  static final Map<String, Map<String, dynamic> Function(Map<String, dynamic>)>boundedPaths = {}; \n'
+        ? 'class $name{ \n  static final Map<String, Map<String, dynamic> Function(Map<String, dynamic>)>connections = {}; \n'
         : 'class ${name}Endpoint{ \n\tString get name => "$_name";\n');
     for (GeneratedEndpoint subPoint in subPoints) {
       buffer.write(

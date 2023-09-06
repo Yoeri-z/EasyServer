@@ -12,5 +12,9 @@ void main(List<String> arguments) {
       print(e);
       print('Usage: \n \t easyserver create {project_name}');
     }
+  } else {
+    print('valid arguments:');
+    print('easyserver generate');
+    print('easyserver create {project_name}');
   }
 }
