@@ -83,7 +83,8 @@ Future<void> generateEndpoints() async {
   final YamlMap yaml = loadYaml(await file.readAsString());
   GeneratedEndpoint endpoint = GeneratedEndpoint(yaml);
 
-  StringBuffer fileContents = StringBuffer('import "./model.dart"; \n\n\n');
+  StringBuffer fileContents = StringBuffer(
+      'import "dart:convert";\n\nimport "package:http/http.dart" as http; \n\nimport "./model.dart"; \n\n\n');
   endpoint.generate(fileContents);
   final generatedFile = File('$pathToFolder/lib/endpoints.dart');
   if (await generatedFile.exists()) {

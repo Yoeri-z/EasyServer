@@ -20,24 +20,27 @@ class _FinalGeneratedEndPoint implements GeneratedEndpoint {
     return text == 'String' ||
         text == 'int' ||
         text == 'double' ||
+        text == 'void' ||
         text == 'bool';
   }
 
   void _writeParams(StringBuffer buffer) {
+    String paramString = '';
     for (String param in params) {
-      buffer.write('$param,');
+      paramString = '$paramString $param,';
     }
+    buffer.write(paramString.substring(0, paramString.length - 1));
   }
 
   void _writeFunctionType(StringBuffer buffer) {
-    buffer.write('\t$returnType Function(');
+    buffer.write('\tFuture<$returnType> Function(');
     _writeParams(buffer);
     buffer.write(')?');
   }
 
   void _writeMiddle(StringBuffer buffer) {
-    buffer
-        .writeln('\tMap<String, dynamic> _middle(Map<String, dynamic> json){');
+    buffer.writeln(
+        '\tFuture<Map<String, dynamic>> _middle(Map<String, dynamic> json) async {');
     for (String param in params) {
       final split = param.split(' ');
       final type = split.first;
@@ -48,7 +51,7 @@ class _FinalGeneratedEndPoint implements GeneratedEndpoint {
         buffer.writeln('\t\tfinal $param = json["$name"];');
       }
     }
-    buffer.write('\t\tfinal result = _endPoint!(');
+    buffer.write('\t\tfinal result = await _endPoint!(');
     for (String param in params) {
       buffer.write('${param.split(' ').last},');
     }
@@ -65,13 +68,56 @@ class _FinalGeneratedEndPoint implements GeneratedEndpoint {
 ''');
   }
 
+  void _writeCall(StringBuffer buffer) {
+    buffer.writeln();
+    buffer.write('\tFuture<$returnType> call(');
+    _writeParams(buffer);
+    buffer.write(') async {\n');
+    buffer.writeln('\t\tfinal map = {');
+    for (String param in params) {
+      final split = param.split(' ');
+      final name = split.last;
+      if (isBasicType(returnType)) {
+        buffer.writeln('\t\t\t"$name": $name,');
+      } else {
+        buffer.writeln('\t\t\t"$name": $name.toJson(),');
+      }
+    }
+    buffer.write('\t\t}; \n');
+    buffer.writeln('\t\tvar response = await http.post(uri,');
+    buffer.writeln(
+        '\t\tbody: jsonEncode(map), headers: {"Content-Type": "application/json"});');
+    buffer.writeln('\t\tif (response.statusCode == 200) {');
+    buffer.writeln('\t\t\tfinal json = jsonDecode(response.body);');
+    buffer.writeln(isBasicType(returnType)
+        ? '\t\t\treturn json["response"] as $returnType;'
+        : '\t\t\treturn $returnType.fromJson(json["response"]);');
+    buffer.writeln('\t\t}');
+    buffer.writeln('''
+    else{
+      throw Error();
+    }
+''');
+    buffer.writeln('\t}');
+    buffer.writeln();
+  }
+
   @override
   void generate(StringBuffer buffer) {
-    buffer.write('class ${name}Endpoint{ \n');
+    buffer.write('class ${_name}Endpoint{ \n');
     buffer.writeln('\tString get path => "$path";');
     buffer.writeln('\tString get name => "$_name";');
+    buffer.writeln();
+    buffer.writeln('\tUri uri;');
+    buffer.writeln('''
+  ${_name}Endpoint(this.uri){
+    uri = uri.replace(path: path);
+  }
+''');
+    buffer.writeln();
     _writeFunctionType(buffer);
     buffer.write(' _endPoint; \n \n');
+    _writeCall(buffer);
     _writeMiddle(buffer);
     buffer.write('\tset setEndpoint(');
     _writeFunctionType(buffer);
@@ -102,13 +148,27 @@ class _SubGeneratedEndpoint implements GeneratedEndpoint {
 
   @override
   void generate(StringBuffer buffer) {
-    buffer.write((name == 'Endpoints')
-        ? 'class $name{ \n  static final Map<String, Map<String, dynamic> Function(Map<String, dynamic>)>connections = {}; \n'
-        : 'class ${name}Endpoint{ \n\tString get name => "$_name";\n');
+    buffer.write((_name == 'Endpoints')
+        ? 'class $_name{ \n  static final Map<String, Future<Map<String, dynamic>> Function(Map<String, dynamic>)>connections = {}; \n'
+        : 'class ${_name}Endpoint{ \n\tString get name => "$_name";\n');
+
+    buffer.writeln();
     for (GeneratedEndpoint subPoint in subPoints) {
-      buffer.write(
-          '\tfinal ${subPoint.name}Endpoint ${subPoint.name.toLowerCase()} = ${subPoint.name}Endpoint(); \n');
+      buffer.writeln(
+          '\tfinal ${subPoint.name}Endpoint ${subPoint.name.toLowerCase()};');
     }
+    buffer.writeln('\tfinal Uri uri;');
+    buffer.write((_name == 'Endpoints')
+        ? '\t$_name(this.uri):'
+        : '\t${_name}Endpoint(this.uri):');
+    String initializers = '';
+    for (GeneratedEndpoint subPoint in subPoints) {
+      initializers =
+          '$initializers ${subPoint.name.toLowerCase()} = ${subPoint.name}Endpoint(uri),';
+    }
+    buffer.write(initializers.substring(0, initializers.length - 1));
+    buffer.write(';');
+    buffer.writeln();
     buffer.write('} \n');
     for (GeneratedEndpoint subPoint in subPoints) {
       subPoint.generate(buffer);

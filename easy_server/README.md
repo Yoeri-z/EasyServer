@@ -1,2 +1,4 @@
-A sample command-line application with an entrypoint in `bin/`, library code
-in `lib/`, and example unit test in `test/`.
+# easy_server
+
+this server is in development
+once it is stable a detailed documentation will be written
