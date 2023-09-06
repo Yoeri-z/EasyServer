@@ -1,5 +1,5 @@
-import 'package:easyserver_cli/create.dart';
-import 'package:easyserver_cli/generate.dart';
+import 'package:easy_server_cli/create.dart';
+import 'package:easy_server_cli/generate.dart';
 
 void main(List<String> arguments) {
   if (arguments.first == 'generate') {

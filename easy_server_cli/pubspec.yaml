@@ -1,4 +1,4 @@
-name: easyserver_cli
+name: easy_server_cli
 description: The cli for the easy server tool
 version: 1.0.0
 # repository: https://github.com/my_org/my_repo
@@ -8,6 +8,7 @@ environment:
 
 # Add regular dependencies here.
 dependencies:
+  yaml: ^3.1.2
   # path: ^1.8.0
 
 dev_dependencies:
