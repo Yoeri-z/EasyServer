@@ -1,3 +1,6 @@
+## 1.0.5
+- semi stable, connection between server and client works
+
 ## 1.0.4
 - refixed the issue in 1.0.3
 

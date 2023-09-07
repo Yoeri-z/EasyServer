@@ -1,3 +1,6 @@
+## 1.0.2
+- semi stable, connection between client and server works
+
 ## 1.0.1
 - changed internal structure of server to use Futures instead of synchronous endpoints
 

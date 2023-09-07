@@ -9,7 +9,8 @@ environment:
 
 # Add regular dependencies here.
 dependencies:
-  # path: ^1.8.0
+  project_name_generated:
+    path: ../project_name_generated
 
 dev_dependencies:
   lints: ^2.0.0
