@@ -52,6 +52,7 @@ Future<Directory> reconfigureyaml(
   final contents = await yamlFile.readAsString();
   final newContents = contents.replaceAll('project_name', projectname);
   await yamlFile.writeAsString(newContents);
+  Process.run('dart', ['pub', 'get'], workingDirectory: dirWithYaml.path);
   return dirWithYaml;
 }
 

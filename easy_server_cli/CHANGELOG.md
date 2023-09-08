@@ -1,3 +1,6 @@
+## 1.0.6
+- stable generation, reworked autogeneration method, creation functional
+
 ## 1.0.5
 - semi stable, connection between server and client works
 
