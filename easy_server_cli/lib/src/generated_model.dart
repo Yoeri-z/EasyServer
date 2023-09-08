@@ -1,5 +1,4 @@
-import 'dart:io';
-
+import 'package:easy_server_cli/src/templates/model.dart';
 import 'package:yaml/yaml.dart';
 import 'package:easy_server_cli/generate.dart';
 
@@ -13,23 +12,24 @@ class GeneratedModel {
   ///the names of the fields
   final List<String> _names = [];
 
+  ///create the pre-generated model
   GeneratedModel(MapEntry yamlEntry, StringBuffer imports)
       : className = yamlEntry.key {
     className = yamlEntry.key;
-    imports.writeln(
-        'export "./models/${yamlEntry.key.toString().toLowerCase()}.dart";\n');
-    final entries = readYamlMap(yamlEntry.value);
+    final entries = _readYamlMap(yamlEntry.value);
     for (var entry in entries) {
       submit(entry.key, entry.value);
     }
   }
 
+  ///submite a field with a [fieldName] and [type] to the model
   void submit(String fieldName, String type) {
     _typeList.add(type);
     _names.add(fieldName);
   }
 
-  List<MapEntry> readYamlMap(dynamic yaml) {
+  //get the values out of the yamlmap
+  List<MapEntry> _readYamlMap(dynamic yaml) {
     try {
       return (yaml as YamlMap).entries.toList();
     } catch (e) {
@@ -39,40 +39,33 @@ class GeneratedModel {
     }
   }
 
-  void _base(StringBuffer buffer) {
+  //write the base of the model
+  String _base(String classTemplate, StringBuffer buffer) {
     for (int i = 0; i < _names.length; i++) {
-      buffer.writeln('  ${_typeList[i]} ${_names[i]};');
+      buffer.writeln('\t${_typeList[i]} ${_names[i]};');
     }
-    buffer.writeln();
-    buffer.writeln();
-    buffer.write('  $className({');
+    classTemplate = classTemplate.replaceFirst('vars', buffer.toString());
+    buffer.clear();
     for (String name in _names) {
-      buffer.write('required this.$name, ');
+      buffer.write('\t\trequired this.$name, ');
     }
-    buffer.writeln('});');
+    return classTemplate.replaceFirst('reqs', buffer.toString());
   }
 
-  void _toJson(StringBuffer buffer) {
-    buffer.writeln();
-    buffer.writeln('\t@override');
-    buffer.writeln('\tMap<String, dynamic> toJson() {');
-    buffer.writeln('\t\treturn {');
+  //write the tojson function of the model
+  String _toJson(String classTemplate, StringBuffer buffer) {
     for (int i = 0; i < _names.length; i++) {
       if (modelTypes.contains(_typeList[i])) {
-        buffer.write('\t\t\t\'${_names[i]}\': ${_names[i]}.toJson(),');
+        buffer.write('\t\t\t"${_names[i]}": ${_names[i]}.toJson(),');
       } else {
-        buffer.writeln('\t\t\t\'${_names[i]}\': ${_names[i]},');
+        buffer.writeln('\t\t\t"${_names[i]}": ${_names[i]},');
       }
     }
-    buffer.writeln('\t\t};');
-    buffer.writeln('\t}');
+    return classTemplate.replaceFirst('tojson', buffer.toString());
   }
 
-  void _fromJson(StringBuffer buffer) {
-    buffer.writeln();
-    buffer.writeln('\t@override');
-    buffer.writeln('\tfactory $className.fromJson(Map<String,dynamic> json) {');
-    buffer.writeln('\t\treturn $className(');
+  //write the fromJson function of the model
+  String _fromJson(String classTemplate, StringBuffer buffer) {
     for (int i = 0; i < _names.length; i++) {
       if (modelTypes.contains(_typeList[i])) {
         buffer.writeln(
@@ -81,22 +74,20 @@ class GeneratedModel {
         buffer.writeln('\t\t\t${_names[i]}: json["${_names[i]}"],');
       }
     }
-    buffer.writeln('\t\t);');
-    buffer.writeln('\t}');
+    return classTemplate.replaceFirst('fromjson', buffer.toString());
   }
 
   ///convert the object to a file, the file will be created inside the function and is also returned
-  Future<File> toFile(String pathToFolder) async {
-    File file = File('$pathToFolder/${className.toLowerCase()}.dart');
-    StringBuffer buffer = StringBuffer('import "../model.dart"')
-      ..write(';\n\n')
-      ..writeln('class $className implements Model{\n');
-    _base(buffer);
-    _toJson(buffer);
-    _fromJson(buffer);
-    buffer.writeln('}');
-    await file.writeAsString(buffer.toString());
-    await file.create();
-    return file;
+  void generate(StringBuffer modelbuffer) async {
+    String classTemplate = modelTemplate;
+    StringBuffer buffer = StringBuffer();
+    classTemplate = classTemplate.replaceAll('class_name', className);
+    classTemplate = _base(classTemplate, buffer);
+    buffer.clear();
+    classTemplate = _toJson(classTemplate, buffer);
+    buffer.clear();
+    classTemplate = _fromJson(classTemplate, buffer);
+    buffer.clear();
+    modelbuffer.write(classTemplate);
   }
 }

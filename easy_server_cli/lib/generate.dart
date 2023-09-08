@@ -1,96 +1,103 @@
 import 'dart:io';
 
+import 'package:easy_server_cli/src/templates/model_abstract.dart';
+import 'package:package_config/package_config.dart' as package;
 import 'package:yaml/yaml.dart';
 
 import 'package:easy_server_cli/src/generated_model.dart';
 import 'package:easy_server_cli/src/generated_endpoints.dart';
-
-///the constant part of the [Model] abstract class
-const String kmodel = '''
-abstract class Model {
-  Model() {
-    throw Error();
-  }
-  factory Model.fromJson(Map<String, dynamic> json) {
-    throw Error();
-  }
-  Map<String, dynamic> toJson();
-}
-''';
 
 late final List<String> modelTypes;
 
 Future<void> generateModels() async {
   final pathToFolder = Directory.current.path.replaceAll('\\', '/');
   // the models in the yaml file
-  final file = File('$pathToFolder/models.yaml');
-
-  if (!await file.exists()) {
-    print('Error: models.yaml does not exist in the script directory.');
+  final yamlFile = File('$pathToFolder/models.yaml');
+  //create a new file in case it accidentally got deleted
+  if (!await yamlFile.exists()) {
+    await yamlFile.create();
     return;
   }
-  //directory to be created
-  Directory folder = Directory('$pathToFolder/lib/models');
+
+  final YamlMap yaml = loadYaml(await yamlFile.readAsString());
+  if (yaml.isEmpty) {
+    print('models.yaml is empty');
+    return;
+  }
+  modelTypes = yaml.keys.cast<String>().toList();
+
   //model file
   File modelFile = File('$pathToFolder/lib/model.dart');
-  //if the directory exists delete it and its contents to 'refresh'
-  if (await folder.exists()) {
-    await folder.delete(recursive: true);
+  //"refresh" the file (delete it and generate a new one)
+  if (await modelFile.exists()) {
+    await modelFile.delete();
   }
-  //create directory and model file
-  await folder.create();
+  //create  model file
   await modelFile.create();
+  //create a stringbuffer to write the filecontents to
+  final StringBuffer modelbuffer = StringBuffer();
+  //write the abstract class
+  modelbuffer.writeln(modelAbstractTemplate);
+
   //read the input file and process the YamlMap
-  List<GeneratedModel> models = [];
-  final YamlMap yaml = loadYaml(await file.readAsString());
-  modelTypes = yaml.keys.cast<String>().toList();
   late final List<MapEntry> entryList;
   try {
     entryList = yaml.entries.toList();
   } catch (e) {
     print("Error: $e");
-    print("Formatting issue");
-    print("Here is the processed version of your yaml");
-    print(yaml);
+    print("Formatting issue occured in your yaml");
     throw Error();
   }
-  //buffer for the import statements at the top of the file
-  StringBuffer importBuffer = StringBuffer();
 
   //for loop to handle every Model in the yaml
-  //TO-DO: Error checking
+  List<GeneratedModel> models = [];
   for (MapEntry mapEntry in entryList) {
-    var generatedModel = GeneratedModel(mapEntry, importBuffer);
-    models.add(generatedModel);
+    models.add(GeneratedModel(mapEntry, modelbuffer));
   }
-  importBuffer.write(kmodel);
-  modelFile.writeAsString(importBuffer.toString());
-  //make files for each model
+  //generate each model
   for (GeneratedModel model in models) {
-    model.toFile('$pathToFolder/lib/models');
+    model.generate(modelbuffer);
   }
+  //write the buffer to the file
+  modelFile.writeAsString(modelbuffer.toString());
 }
 
 Future<void> generateEndpoints() async {
+  //file loading
+  //get currectdirectory
   final pathToFolder = Directory.current.path.replaceAll('\\', '/');
-
-  final file = File('$pathToFolder/endpoints.yaml');
-
-  if (!await file.exists()) {
-    print('Error: endpoints.yaml does not exist in the script directory.');
+  //read the yamlfile
+  final yamlFile = File('$pathToFolder/endpoints.yaml');
+  //if file is exidentally deleted recreate it
+  if (!await yamlFile.exists()) {
+    await yamlFile.create();
     return;
   }
-  final YamlMap yaml = loadYaml(await file.readAsString());
-  GeneratedEndpoint endpoint = GeneratedEndpoint(yaml);
-
-  StringBuffer fileContents = StringBuffer(
-      'import "dart:convert";\n\nimport "package:http/http.dart" as http; \n\nimport "./model.dart"; \n\n\n');
-  endpoint.generate(fileContents);
+  //load the yaml from the file
+  final YamlMap yaml = loadYaml(await yamlFile.readAsString());
+  //stop if the file is empty
+  if (yaml.isEmpty) {
+    print('endpoints.yaml is empty');
+    return;
+  }
+  //get the generated file location
   final generatedFile = File('$pathToFolder/lib/endpoints.dart');
+
+  //"refresh" file (delete and recreate it)
   if (await generatedFile.exists()) {
     await generatedFile.delete();
   }
   await generatedFile.create();
+
+  //file writing
+  //create the endpoints tree structure
+  GeneratedEndpoint endpoint = GeneratedEndpoint(yaml);
+  //create the buffer with the required imports
+  StringBuffer fileContents = StringBuffer(
+      '// ignore_for_file: library_private_types_in_public_api \n import "dart:convert";\n\nimport "package:http/http.dart" as http; \n\nimport "./model.dart"; \n\n\n');
+  //generate the tree structure
+  endpoint.generate(fileContents);
+  //write the generated string to file
   generatedFile.writeAsString(fileContents.toString());
 }
 

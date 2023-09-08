@@ -9,6 +9,7 @@ environment:
 
 # Add regular dependencies here.
 dependencies:
+  easy_server: ^1.0.2
   project_name_generated:
     path: ../project_name_generated
 
