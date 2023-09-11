@@ -76,10 +76,11 @@ packages:
   easy_server:
     dependency: "direct main"
     description:
-      path: "../../easy_server"
-      relative: true
-    source: path
-    version: "1.0.2"
+      name: easy_server
+      sha256: e630dd5094bd9ad9eebea6c68e34dc2ed5449f77b210ac536297ffff96cf7448
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.3"
   file:
     dependency: transitive
     description:

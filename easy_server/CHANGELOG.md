@@ -1,3 +1,6 @@
+## 1.0.3
+- added preflight requests support and compatibility with browsers.
+
 ## 1.0.2
 - semi stable, connection between client and server works
 

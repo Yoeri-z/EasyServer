@@ -56,36 +56,39 @@ Future<Directory> reconfigureyaml(
   return dirWithYaml;
 }
 
-void reconfigureDart(Directory projectDirectory, String projectname) {
+Future<void> reconfigureDart(
+    Directory projectDirectory, String projectname) async {
   final flutterfile =
-      File('${projectDirectory.path}/project_name_flutter/lib/main.dart');
+      File('${projectDirectory.path}/${projectname}_flutter/lib/main.dart');
   final serverfile =
-      File('${projectDirectory.path}/project_name_server/lib/main.dart');
-  flutterfile
+      File('${projectDirectory.path}/${projectname}_server/lib/main.dart');
+  await flutterfile
       .readAsString()
       .then((value) => value.replaceAll('project_name', projectname))
       .then((value) => flutterfile.writeAsString(value));
-  serverfile
+  await serverfile
       .readAsString()
       .then((value) => value.replaceAll('project_name', projectname))
-      .then((value) => flutterfile.writeAsString(value));
+      .then((value) => serverfile.writeAsString(value));
 }
 
 void create(String projectname) async {
   final projectDir = Directory(projectname).absolute..createSync();
   copyFromGit(projectDir);
-  reconfigureDart(projectDir, projectname);
   final defaultpath = '${projectDir.path}/project_name';
   final newpath = '${projectDir.path}/$projectname';
 
-  Directory('${defaultpath}_flutter')
-      .rename('${newpath}_flutter')
-      .then((val) => reconfigureyaml(val, projectname));
-
-  Directory('${defaultpath}_server')
-      .rename('${newpath}_server')
-      .then((val) => reconfigureyaml(val, projectname));
-  Directory('${defaultpath}_generated')
-      .rename('${newpath}_generated')
-      .then((val) => reconfigureyaml(val, projectname));
+  List<Future> futures = [
+    Directory('${defaultpath}_flutter')
+        .rename('${newpath}_flutter')
+        .then((val) => reconfigureyaml(val, projectname)),
+    Directory('${defaultpath}_server')
+        .rename('${newpath}_server')
+        .then((val) => reconfigureyaml(val, projectname)),
+    Directory('${defaultpath}_generated')
+        .rename('${newpath}_generated')
+        .then((val) => reconfigureyaml(val, projectname))
+  ];
+  await Future.wait(futures);
+  reconfigureDart(projectDir, projectname);
 }

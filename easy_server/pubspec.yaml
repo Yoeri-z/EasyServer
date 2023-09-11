@@ -1,7 +1,7 @@
 name: easy_server
 description: The server for your easyserver application
 repository: https://github.com/Yoeri-z/EasyServer
-version: 1.0.2
+version: 1.0.3
 # repository: https://github.com/my_org/my_repo
 
 environment:
