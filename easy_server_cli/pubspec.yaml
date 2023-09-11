@@ -1,6 +1,6 @@
 name: easy_server_cli
 description: The cli for the easy server tool.
-version: 1.0.5
+version: 1.0.6
 repository: https://github.com/Yoeri-z/EasyServer
 
 executables:

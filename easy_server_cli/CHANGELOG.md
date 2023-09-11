@@ -1,5 +1,6 @@
 ## 1.0.6
 - stable generation, reworked autogeneration method, creation functional
+- changed create configuration to include a default project uppon creation
 
 ## 1.0.5
 - semi stable, connection between server and client works
