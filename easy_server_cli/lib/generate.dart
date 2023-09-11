@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:easy_server_cli/src/templates/model_abstract.dart';
-import 'package:package_config/package_config.dart' as package;
 import 'package:yaml/yaml.dart';
 
 import 'package:easy_server_cli/src/generated_model.dart';

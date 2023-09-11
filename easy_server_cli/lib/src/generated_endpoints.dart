@@ -21,16 +21,19 @@ class _FinalGeneratedEndPoint implements GeneratedEndpoint {
     return text == 'String' ||
         text == 'int' ||
         text == 'double' ||
-        text == 'void' ||
-        text == 'bool';
+        text == 'bool' ||
+        text.startsWith('List') ||
+        text.startsWith('Map');
   }
 
   void _writeParams(StringBuffer buffer) {
-    String paramString = '';
-    for (String param in params) {
-      paramString = '$paramString $param,';
+    if (params.isNotEmpty) {
+      String paramString = '';
+      for (String param in params) {
+        paramString = '$paramString $param,';
+      }
+      buffer.write(paramString.substring(0, paramString.length - 1));
     }
-    buffer.write(paramString.substring(0, paramString.length - 1));
   }
 
   void _writeNames(StringBuffer buffer) {
@@ -54,7 +57,20 @@ class _FinalGeneratedEndPoint implements GeneratedEndpoint {
         classtemplate.replaceFirst('middle_vars', buffer.toString());
     buffer.clear();
     _writeNames(buffer);
-    return classtemplate.replaceFirst('middle_names', buffer.toString());
+    classtemplate =
+        classtemplate.replaceFirst('middle_names', buffer.toString());
+    buffer.clear();
+    if (isBasicType(returnType)) {
+      classtemplate = classtemplate.replaceFirst(
+          'middle_mapper', 'return {"response": result};');
+    } else if (returnType == 'void') {
+      classtemplate = classtemplate.replaceFirst(
+          'middle_mapper', 'return {"response": null};');
+    } else {
+      classtemplate = classtemplate.replaceFirst(
+          'middle_mapper', 'return {"response":result?.toJson()};');
+    }
+    return classtemplate;
   }
 
   String _writeCall(String classtemplate, StringBuffer buffer) {
@@ -73,7 +89,9 @@ class _FinalGeneratedEndPoint implements GeneratedEndpoint {
         'json_call_return',
         isBasicType(returnType)
             ? 'json["response"] as $returnType;'
-            : '$returnType.fromJson(json["response"]);');
+            : (returnType == 'void')
+                ? ';'
+                : '$returnType.fromJson(json["response"]);');
   }
 
   @override

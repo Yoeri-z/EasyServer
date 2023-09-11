@@ -76,10 +76,9 @@ packages:
   easy_server:
     dependency: "direct main"
     description:
-      name: easy_server
-      sha256: e6965fe94b3b32016190c46beb05485437c80feb2172dfd14acba2dbb2c25e88
-      url: "https://pub.dev"
-    source: hosted
+      path: "../../easy_server"
+      relative: true
+    source: path
     version: "1.0.2"
   file:
     dependency: transitive

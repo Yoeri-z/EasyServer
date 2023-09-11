@@ -56,9 +56,25 @@ Future<Directory> reconfigureyaml(
   return dirWithYaml;
 }
 
-void create(String projectname) {
+void reconfigureDart(Directory projectDirectory, String projectname) {
+  final flutterfile =
+      File('${projectDirectory.path}/project_name_flutter/lib/main.dart');
+  final serverfile =
+      File('${projectDirectory.path}/project_name_server/lib/main.dart');
+  flutterfile
+      .readAsString()
+      .then((value) => value.replaceAll('project_name', projectname))
+      .then((value) => flutterfile.writeAsString(value));
+  serverfile
+      .readAsString()
+      .then((value) => value.replaceAll('project_name', projectname))
+      .then((value) => flutterfile.writeAsString(value));
+}
+
+void create(String projectname) async {
   final projectDir = Directory(projectname).absolute..createSync();
   copyFromGit(projectDir);
+  reconfigureDart(projectDir, projectname);
   final defaultpath = '${projectDir.path}/project_name';
   final newpath = '${projectDir.path}/$projectname';
 

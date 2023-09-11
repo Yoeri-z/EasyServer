@@ -4,26 +4,8 @@ import 'dart:io';
 
 ///the easy server object, use this to manage your server, acces endpoints, set up websockets and more
 class EasyServer {
-  final String _adress;
+  final String _host;
   final int _port;
-
-  ///This is the core of your easyserver, you can connect your functions up to the endpoints defined in endpoints.yaml, [endpoints] is the base of all your endpoints
-  ///you can set endpoints like this:
-  ///
-  ///
-  ///  `server.endpoints.example.setEndpoint = (request, params) => myFunc`
-  ///
-  ///
-  ///The function will return what you defined in endpoints.yaml, if you did not specify a returntype it will be void. You can define the parameters in
-  ///endpoints.yaml, allowed types are String, double, Int, bool and serializable models that
-  ///you defined in models.yaml
-  ///
-  ///You can also create deeper branches in your endpoints.yaml. They might look like this
-  ///
-  ///`server.endpoints.example.helloworld.setEndpoint = (request, params) => myFunc`
-  ///
-  ///You can make endpoints however deep you want, note that an endpoints can only have one function
-  ///this might seem complicated but it creates an easier readable structure to your endpoints and allows you to set up the functions in whatever form you want
 
   bool _initialized = false;
 
@@ -34,41 +16,71 @@ class EasyServer {
       connections;
 
   ///Create an EasyServer, manages httprequests and sends them to the correct endpoints, call [initialize] to start the server
-  EasyServer(String adress, int port, this.connections)
-      : _adress = adress,
+  EasyServer(String host, int port, this.connections)
+      : _host = host,
         _port = port;
 
   ///wether the server has been initialized or not, you can start the initialization by calling [initialize]
   bool get initialized => _initialized;
 
   ///get the adress that the server is bound to
-  String get adress => _adress;
+  String get adress => _host;
 
   ///get the port that the server is bound to
   int get port => _port;
 
   ///initialize the server, start listening on the adress and port that were specified in the constructor of the [EasyServer] class
-  Future<void> initialize() async {
-    _httpServer = await HttpServer.bind(_adress, _port);
+  Future<void> start() async {
+    _httpServer = await HttpServer.bind(_host, _port);
     _httpServer.listen((r) => _handleRequest(r));
     _initialized = true;
   }
 
-  ///stop the server, to start it again [initialize] must be called
+  ///stop the server, to start it again [start] must be called
   void stop() {
     _httpServer.close();
   }
 
   void _handleRequest(HttpRequest request) async {
-    if (connections[request.uri.path] != null) {
-      final json = jsonDecode(await utf8.decodeStream(request));
+    print(request.method);
+    print(request.headers.toString());
+    if (request.method == 'OPTIONS') {
+      // Respond to preflight request with necessary headers
+      _handlePreflightRequest(request);
+      return;
+    }
+
+    // Set CORS headers to allow requests from localhost
+    request.response.headers.add('Access-Control-Allow-Origin', '*');
+    request.response.headers
+        .add('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    request.response.headers.add(
+        'Access-Control-Allow-Headers', 'Origin, Content-Type, X-Auth-Token');
+
+    print(request.method);
+    if (request.method == 'POST') {
+      print(request.headers.value('content-type'));
+      final message = await utf8.decodeStream(request);
+      print('content: $message');
+      final json = jsonDecode(message);
       final result =
           await connections[request.uri.path]!(json as Map<String, dynamic>);
       final body = jsonEncode(result);
       final response = request.response
-        ..headers.contentType = ContentType.json
+        ..headers.set('Content-Type', 'application/json')
         ..write(body);
       await response.close();
     }
+  }
+
+  Future<void> _handlePreflightRequest(HttpRequest request) async {
+    // Respond to preflight request with necessary headers
+    request.response.statusCode = HttpStatus.noContent;
+    request.response.headers.add('Access-Control-Allow-Origin', '*');
+    request.response.headers
+        .add('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    request.response.headers.add('Access-Control-Allow-Headers',
+        "Origin, X-Requested-With, Content-Type, Accept");
+    request.response.close();
   }
 }

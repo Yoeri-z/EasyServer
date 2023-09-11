@@ -18,7 +18,7 @@ call_map
 		}; 
 
 		var response = await http.post(uri,
-		body: jsonEncode(map), headers: {"Content-Type": "application/json"});
+		body: jsonEncode(map), headers: {"content-type": "application/json"});
 		if (response.statusCode == 200) {
 			final json = jsonDecode(response.body);
 			return json_call_return 
@@ -33,13 +33,7 @@ call_map
 middle_vars
 
 	  final result = await _endPoint!(middle_names);
-    late Map<String, dynamic> map;
-    if(result is Model){
-      map = (result as Model).toJson();
-      return {'response':map};
-    }else{
-      return{'response': result};
-    }
+    middle_mapper
   }
 
   ///You can use this function to link a functon to an endpoint, the function you pass will be called whenever the server receives a request on this endpoints, the endpoints will receive the paramaters you defined in endpoints.yaml. 

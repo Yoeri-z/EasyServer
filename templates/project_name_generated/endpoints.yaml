@@ -1,0 +1,10 @@
+#In this file you can define you endpoints, 
+#below is an example of the endpoints for the default notes app
+Notes:
+  GetSingleNote:
+    - returnType: Note?
+    - title: String 
+  getAllNotes:
+    - returnType: List
+  setNote:
+    - note: Note

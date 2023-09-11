@@ -1,0 +1,9 @@
+#In this file you can define you models, 
+#below is an example of the models for the default notes app
+#accepted content types are String, int, double, bool and List and Map
+#other accepted content are other models defined in this file, these can however not be placed inside Lists or Maps.
+Note:
+  title: String
+  content: String
+  timestamp: String
+
