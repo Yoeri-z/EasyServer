@@ -1,3 +1,6 @@
+## 1.0.7
+-- fixed a bug where the files contained errors upon creation
+
 ## 1.0.6
 - stable generation, reworked autogeneration method, creation functional
 - changed create configuration to include a default project uppon creation

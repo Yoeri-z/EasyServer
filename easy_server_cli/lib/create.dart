@@ -62,14 +62,20 @@ Future<void> reconfigureDart(
       File('${projectDirectory.path}/${projectname}_flutter/lib/main.dart');
   final serverfile =
       File('${projectDirectory.path}/${projectname}_server/lib/main.dart');
-  await flutterfile
+  final serverbinfile =
+      File('${projectDirectory.path}/${projectname}_server/bin/main.dart');
+  flutterfile
       .readAsString()
       .then((value) => value.replaceAll('project_name', projectname))
       .then((value) => flutterfile.writeAsString(value));
-  await serverfile
+  serverfile
       .readAsString()
       .then((value) => value.replaceAll('project_name', projectname))
       .then((value) => serverfile.writeAsString(value));
+  serverbinfile
+      .readAsString()
+      .then((value) => value.replaceAll('project_name', projectname))
+      .then((value) => serverbinfile.writeAsString(value));
 }
 
 void create(String projectname) async {
