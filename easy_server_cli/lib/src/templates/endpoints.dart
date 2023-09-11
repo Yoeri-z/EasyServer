@@ -1,4 +1,6 @@
 const endpointsTemplate = '''
+import "./src/errors.dart";
+
 class _endpoint_name{ 
 	String get path => url_path;
 	String get name => model_name;
@@ -24,7 +26,7 @@ call_map
 			return json_call_return 
 		}
     else{
-      throw Error();
+      throw EasyServerException(statusCode);
     }
 
 	}
